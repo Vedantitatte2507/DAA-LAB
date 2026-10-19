@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define INF 9999999
+
+int n;
+int cost[16][16];
+int memo[1 << 16][16];
+
+int min(int a, int b) {
+    return (a < b) ? a : b;
+}
+
+// Recursive function with memoization (Bitmask DP)
+int tsp(int mask, int u) {
+    // Base case: All cities have been visited, return to the start city (0)
+    if (mask == (1 << n) - 1) {
+        return (cost[u][0] != -1) ? cost[u][0] : INF;
+    }
+    
+    // Return already computed state
+    if (memo[mask][u] != -1) {
+        return memo[mask][u];
+    }
+    
+    int ans = INF;
+    for (int v = 0; v < n; v++) {
+        // If city v is unvisited and a valid edge exists
+        if (!(mask & (1 << v)) && cost[u][v] != -1) {
+            int res = tsp(mask | (1 << v), v);
+            if (res != INF) {
+                ans = min(ans, cost[u][v] + res);
+            }
+        }
+    }
+    return memo[mask][u] = ans;
+}
+
+int main() {
+    // Read number of cities
+    if (scanf("%d", &n) != 1) return 0;
+    
+    // Read the cost matrix
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            scanf("%d", &cost[i][j]);
+        }
+    }
+    
+    // Initialize memoization table with -1
+    for (int i = 0; i < (1 << n); i++) {
+        for (int j = 0; j < n; j++) {
+            memo[i][j] = -1;
+        }
+    }
+    
+    // Start tour from city 0 with mask = 1 (city 0 visited)
+    int total_cost = tsp(1, 0);
+    
+    // Print the optimal cost
+    if (total_cost >= INF) {
+        printf("-1\n");
+    } else {
+        printf("%d\n", total_cost);
+    }
+    
+    return 0;
+}
+
